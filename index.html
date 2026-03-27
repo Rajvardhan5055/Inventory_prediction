@@ -251,9 +251,25 @@
             resultBox.style.display = 'none';
 
             // Extract values
-            const store = parseInt(document.getElementById('store').value);
-            const item = parseInt(document.getElementById('item').value);
-            const dateInput = document.getElementById('forecast-date').value;
+            // Extract values
+        const store = parseInt(document.getElementById('store').value);
+        const item = parseInt(document.getElementById('item').value);
+        const dateInput = document.getElementById('forecast-date').value;
+
+        // --- ADD THIS NEW FRONTEND GUARD ---
+        if (store < 1 || store > 10) {
+            alert("Wait! Store ID must be between 1 and 10.");
+            btn.innerText = "Run AI Forecast";
+            btn.style.opacity = "1";
+            return; // This completely stops the function from running
+        }
+        if (item < 1 || item > 50) {
+            alert("Wait! Item ID must be between 1 and 50.");
+            btn.innerText = "Run AI Forecast";
+            btn.style.opacity = "1";
+            return;
+        }
+        // -----------------------------------
 
             // --- SMART DATE LOGIC ---
             // The AI needs year, month, day, dayofweek, and is_weekend.
