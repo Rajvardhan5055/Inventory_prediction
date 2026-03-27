@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field # <-- 1. Added 'Field' here
 import joblib
 import pandas as pd
 
@@ -21,20 +21,20 @@ try:
 except Exception as e:
     print(f"Error loading model: {e}")
 
+# --- THIS IS THE NEW VALIDATION Bouncer ---
 class SalesRequest(BaseModel):
-    store: int
-    item: int
-    year: int
-    month: int
-    day: int
-    dayofweek: int
-    is_weekend: int
+    store: int = Field(..., ge=1, le=10, description="Store ID must be between 1 and 10")
+    item: int = Field(..., ge=1, le=50, description="Item ID must be between 1 and 50")
+    year: int = Field(..., ge=2013, le=2030)
+    month: int = Field(..., ge=1, le=12)
+    day: int = Field(..., ge=1, le=31)
+    dayofweek: int = Field(..., ge=0, le=6)
+    is_weekend: int = Field(..., ge=0, le=1)
+# ------------------------------------------
 
-# --- THIS IS THE NEW PART: Serving your Website ---
 @app.get("/")
 def serve_frontend():
     return FileResponse("index.html")
-# --------------------------------------------------
 
 @app.post("/predict")
 def predict_sales(request: SalesRequest):
