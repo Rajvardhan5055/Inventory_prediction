@@ -1,25 +1,23 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware # <-- 1. We imported this
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import joblib
 import pandas as pd
 
-app = FastAPI(title="Smart Retail Inventory API", description="AI Demand Forecaster")
+app = FastAPI(title="Enterprise AI Forecaster")
 
-# --- 2. THIS IS THE NEW SECURITY UPDATE ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # The "*" means "allow any web page to connect"
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# ------------------------------------------
 
 print("Loading the Random Forest Model...")
 try:
     model = joblib.load('models/rf_model.pkl')
-    print("Model loaded successfully!")
 except Exception as e:
     print(f"Error loading model: {e}")
 
@@ -32,6 +30,12 @@ class SalesRequest(BaseModel):
     dayofweek: int
     is_weekend: int
 
+# --- THIS IS THE NEW PART: Serving your Website ---
+@app.get("/")
+def serve_frontend():
+    return FileResponse("index.html")
+# --------------------------------------------------
+
 @app.post("/predict")
 def predict_sales(request: SalesRequest):
     input_data = pd.DataFrame([{
@@ -43,9 +47,7 @@ def predict_sales(request: SalesRequest):
         'dayofweek': request.dayofweek,
         'is_weekend': request.is_weekend
     }])
-    
     prediction = model.predict(input_data)
-    
     return {
         "store_id": request.store,
         "item_id": request.item,
